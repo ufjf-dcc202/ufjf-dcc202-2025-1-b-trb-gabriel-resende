@@ -25,7 +25,7 @@ const items = document.querySelectorAll(".shop");
 
 let cellsToClear = 0;
 let cellsFertilized = 0;
-// let cellsPlanted = 0;
+let cellsSown = 0;
 
 cells.forEach((cell) => {
   if (cell.classList.contains("rock") || cell.classList.contains("weed")) {
@@ -45,11 +45,14 @@ cells.forEach((cell) => {
       } else {
         messageBox.textContent = `Bom trabalho! Continue limpando o terreno. ${cellsToClear}/144 limpos.`;
       }
-    }
-
-    if (!cell.classList.contains("fertilizer")) {
+    } else if (cellsToClear == 0) {
       cell.classList.add("fertilizer");
       cellsFertilized++;
+
+      if (cellsFertilized === 2) {
+        cells.forEach((c) => c.classList.add("fertilizer"));
+        cellsFertilized = 144;
+      }
 
       if (cellsFertilized < 144) {
         messageBox.textContent = `Bom trabalho! Continue fertilizando o terreno. ${cellsFertilized}/144 fertilizados.`;
@@ -57,7 +60,28 @@ cells.forEach((cell) => {
         messageBox.textContent =
           "Parabéns! Você fertilizou todo o terreno, agora você pode plantar novas culturas. selecione uma semente na loja e clique sobre os terrenos para plantar.";
       }
+    } else if (cellsFertilized > 0) {
+      if (cellsSown === 2) {
+        cells.forEach((c) => {
+          c.classList.remove("fertilizer");
+          c.classList.add("sown");
+        });
+        cellsFertilized = 0;
+        cellsSown = 144;
+      }
+
+      if (
+        cell.classList.contains("fertilizer") &&
+        !cell.classList.contains("sown")
+      ) {
+        cell.classList.remove("fertilizer");
+        cell.classList.add("sown");
+        cellsSown++;
+        messageBox.textContent = `Bom trabalho! Continue plantando novas culturas. ${cellSown}/144 plantadas.`;
+      }
     }
+
+    console.log({ cellsToClear, cellsFertilized, cellsSown });
   });
 });
 
