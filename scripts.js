@@ -24,6 +24,8 @@ const tools = document.querySelectorAll(".tool");
 const items = document.querySelectorAll(".shop");
 
 let cellsToClear = 0;
+let cellsFertilized = 0;
+// let cellsPlanted = 0;
 
 cells.forEach((cell) => {
   if (cell.classList.contains("rock") || cell.classList.contains("weed")) {
@@ -42,6 +44,18 @@ cells.forEach((cell) => {
           "Parabéns! Você limpou todo o terreno, agora voce precisa preparar o solo para o plantio, compre o adubo na loja e clique sobre os terrenos para aplicar.";
       } else {
         messageBox.textContent = `Bom trabalho! Continue limpando o terreno. ${cellsToClear}/144 limpos.`;
+      }
+    }
+
+    if (!cell.classList.contains("fertilizer")) {
+      cell.classList.add("fertilizer");
+      cellsFertilized++;
+
+      if (cellsFertilized < 144) {
+        messageBox.textContent = `Bom trabalho! Continue fertilizando o terreno. ${cellsFertilized}/144 fertilizados.`;
+      } else {
+        messageBox.textContent =
+          "Parabéns! Você fertilizou todo o terreno, agora você pode plantar novas culturas. selecione uma semente na loja e clique sobre os terrenos para plantar.";
       }
     }
   });
