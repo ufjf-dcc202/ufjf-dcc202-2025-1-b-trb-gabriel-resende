@@ -7,10 +7,10 @@ for (let i = 0; i < 144; i++) {
 
   const randomType = Math.random();
 
-  if (randomType < 0.25) {
+  if (randomType < 0.01) {
     cell.classList.add("rock");
     cell.textContent = "🪨";
-  } else if (randomType < 0.5) {
+  } else if (randomType < 0.02) {
     cell.classList.add("weed");
     cell.textContent = "🌿";
   }
@@ -23,13 +23,26 @@ const messageBox = document.querySelector(".message-box p");
 const tools = document.querySelectorAll(".tool");
 const items = document.querySelectorAll(".shop");
 
+let cellsToClear = 0;
+
+cells.forEach((cell) => {
+  if (cell.classList.contains("rock") || cell.classList.contains("weed")) {
+    cellsToClear++;
+  }
+});
+
 cells.forEach((cell) => {
   cell.addEventListener("click", () => {
     if (cell.classList.contains("rock") || cell.classList.contains("weed")) {
       cell.classList.remove("rock", "weed");
       cell.textContent = "";
-      messageBox.textContent =
-        "Bom trabalho! Continue limpando o terreno. 50/144 limpos.";
+      cellsToClear--;
+      if (cellsToClear === 0) {
+        messageBox.textContent =
+          "Parabéns! Você limpou todo o terreno, agora voce precisa preparar o solo para o plantio, compre o adubo na loja e clique sobre os terrenos para aplicar.";
+      } else {
+        messageBox.textContent = `Bom trabalho! Continue limpando o terreno. ${cellsToClear}/144 limpos.`;
+      }
     }
   });
 });
