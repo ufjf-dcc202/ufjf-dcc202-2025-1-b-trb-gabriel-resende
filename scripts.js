@@ -7,32 +7,16 @@ for (let i = 0; i < 144; i++) {
 
   const randomType = Math.random();
 
-  if (randomType < 0.01) {
+  if (randomType < 0.25) {
     cell.classList.add("rock");
     cell.textContent = "🪨";
-  } else if (randomType < 0.02) {
+  } else if (randomType < 0.5) {
     cell.classList.add("weed");
     cell.textContent = "🌿";
   }
 
   farmGrid.appendChild(cell);
 }
-
-const updateStepPlants = (step) => {
-  cells.forEach((cell) => {
-    switch (step) {
-      case "grow":
-        cell.textContent = "🌱";
-        break;
-      case "grow1":
-        cell.textContent = "🌾";
-        break;
-      case "grow2":
-        cell.textContent = "🌴";
-        break;
-    }
-  });
-};
 
 const budgetText = document.getElementById("budget");
 const cells = document.querySelectorAll(".cell");
@@ -84,7 +68,7 @@ const disabledItems = () =>
   items.forEach((item) => item.classList.add("disabled"));
 
 disabledItems();
-nextStepButton.setAttribute("disabled", true);
+nextStepButton.classList.add("disabled");
 
 const clearCell = (cell) => {
   if (!cell.classList.contains("rock") && !cell.classList.contains("weed"))
@@ -156,7 +140,9 @@ const onAllCellsIsSown = () => {
       break;
   }
 
+  seedPlanted = selectedSeed.id;
   budgetText.textContent = `$ ${budget}`;
+  step = "irrigate";
 };
 
 const irrigateCell = (cell) => {
@@ -173,26 +159,13 @@ const onAllCellsIsIrrigated = () => {
   wateringCan.classList.remove("selected");
   wateringCan.classList.add("disabled");
 
-  switch (selectedSeed.id) {
-    case "tomato":
-      budget -= 30;
-      break;
-    case "eggplant":
-      budget -= 90;
-      break;
-    case "pineapple":
-      budget -= 250;
-      break;
-  }
-
-  seedPlanted = selectedSeed.id;
-
-  budgetText.textContent = `$ ${budget}`;
-  nextStepButton.removeAttribute("disabled");
+  nextStepButton.classList.remove("disabled");
 };
 
 cells.forEach((cell) => {
   cell.addEventListener("click", () => {
+    console.log({ step, selectedTool });
+
     if (step === "irrigate" && selectedTool === "watering_can") {
       if (cell.classList.contains("wet")) return;
 
@@ -244,6 +217,16 @@ cells.forEach((cell) => {
 });
 
 actionButton.addEventListener("click", () => {
+  if (
+    selectedTool === "watering_can" &&
+    ["irrigate", "irrigate1"].includes(step)
+  ) {
+    cells.forEach((cell) => irrigateCell(cell));
+    cellsIrrigated = 144;
+
+    onAllCellsIsIrrigated();
+  }
+
   if (
     ["tomato", "eggplant", "pineapple"].includes(selectedItem) &&
     step === "sow"
@@ -369,13 +352,21 @@ nextStepButton.addEventListener("click", () => {
     case "tomato":
       switch (step) {
         case "irrigate":
-          step = "grow";
-          updateStepPlants("grow");
-          break;
-        case "grow":
-          step = "irrigate1";
-        case "irrigate1":
           step = "harvest";
+          updateStepPlants("grow");
+          messageBox.textContent =
+            "Tomates crescendo, quase prontos para serem colhidos! Irrigue-os novamente e avance para a próxima fase.";
+          cells.forEach((cell) => cell.classList.remove("wet"));
+          wateringCan.classList.remove("selected");
+          wateringCan.classList.remove("disabled");
+          break;
+        case "harvest":
+          step = "harvest";
+          updateStepPlants("harvest");
+          messageBox.textContent =
+            "Tomates prontos para serem colhidos! Clique na ferramenta de colheita.";
+          cells.forEach((cell) => cell.classList.remove("wet"));
+          scythe.classList.remove("disabled");
           break;
       }
       break;
@@ -401,6 +392,7 @@ nextStepButton.addEventListener("click", () => {
         case "irrigate":
           step = "grow";
           updateStepPlants("grow");
+          textContent;
           break;
         case "grow":
           step = "irrigate1";
@@ -419,3 +411,20 @@ nextStepButton.addEventListener("click", () => {
       break;
   }
 });
+
+const updateStepPlants = (step) => {
+  cells.forEach((cell) => {
+    cell.classList.remove("sown");
+    switch (step) {
+      case "grow":
+        cell.textContent = "🌱";
+        break;
+      case "grow1":
+        cell.textContent = "🌾";
+        break;
+      case "grow2":
+        cell.textContent = "🌴";
+        break;
+    }
+  });
+};
