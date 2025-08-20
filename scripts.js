@@ -18,6 +18,22 @@ for (let i = 0; i < 144; i++) {
   farmGrid.appendChild(cell);
 }
 
+const updateStepPlants = (step) => {
+  cells.forEach((cell) => {
+    switch (step) {
+      case "grow":
+        cell.textContent = "🌱";
+        break;
+      case "grow1":
+        cell.textContent = "🌾";
+        break;
+      case "grow2":
+        cell.textContent = "🌴";
+        break;
+    }
+  });
+};
+
 const budgetText = document.getElementById("budget");
 const cells = document.querySelectorAll(".cell");
 const messageBox = document.querySelector(".message-box p");
@@ -40,7 +56,7 @@ const eggplantPrice = 90;
 const pineapple = document.getElementById("pineapple");
 const pineapplePrice = 250;
 
-// steps = clear, fertilize, sow, irrigate, grow1, grow2, grow3, harvest
+// steps = clear, fertilize, sow, irrigate, grow, irrigate1, grow1, irrigate2, grow2, irrigate3, harvest
 
 let step = "clear";
 
@@ -143,8 +159,52 @@ const onAllCellsIsSown = () => {
   budgetText.textContent = `$ ${budget}`;
 };
 
+const irrigateCell = (cell) => {
+  if (cell.classList.contains("wet")) return;
+  cell.classList.add("wet");
+};
+
+const onAllCellsIsIrrigated = () => {
+  if (cellsIrrigated < 144) return;
+
+  messageBox.textContent =
+    "Parabéns! Você regou todas as plantas com sucesso. Clique no botão amarelo para avançar no tempo da colheita.";
+  selectedTool = null;
+  wateringCan.classList.remove("selected");
+  wateringCan.classList.add("disabled");
+
+  switch (selectedSeed.id) {
+    case "tomato":
+      budget -= 30;
+      break;
+    case "eggplant":
+      budget -= 90;
+      break;
+    case "pineapple":
+      budget -= 250;
+      break;
+  }
+
+  seedPlanted = selectedSeed.id;
+
+  budgetText.textContent = `$ ${budget}`;
+  nextStepButton.removeAttribute("disabled");
+};
+
 cells.forEach((cell) => {
   cell.addEventListener("click", () => {
+    if (step === "irrigate" && selectedTool === "watering_can") {
+      if (cell.classList.contains("wet")) return;
+
+      irrigateCell(cell);
+
+      cellsIrrigated++;
+
+      messageBox.textContent = `Bom trabalho! Continue regando as plantas. ${cellsIrrigated}/144 regadas.`;
+
+      onAllCellsIsIrrigated();
+    }
+
     if (
       ["tomato", "eggplant", "pineapple"].includes(selectedItem) &&
       step === "sow"
@@ -302,4 +362,60 @@ items.forEach((item) => {
       }
     });
   });
+});
+
+nextStepButton.addEventListener("click", () => {
+  switch (seedPlanted) {
+    case "tomato":
+      switch (step) {
+        case "irrigate":
+          step = "grow";
+          updateStepPlants("grow");
+          break;
+        case "grow":
+          step = "irrigate1";
+        case "irrigate1":
+          step = "harvest";
+          break;
+      }
+      break;
+    case "eggplant":
+      switch (step) {
+        case "irrigate":
+          step = "grow";
+          updateStepPlants("grow");
+          break;
+        case "grow":
+          step = "irrigate1";
+        case "irrigate1":
+          step = "grow1";
+          updateStepPlants("grow1");
+          break;
+        case "irrigate2":
+          step = "harvest";
+          break;
+      }
+      break;
+    case "pineapple":
+      switch (step) {
+        case "irrigate":
+          step = "grow";
+          updateStepPlants("grow");
+          break;
+        case "grow":
+          step = "irrigate1";
+        case "irrigate1":
+          step = "grow1";
+          updateStepPlants("grow1");
+          break;
+        case "irrigate2":
+          step = "grow2";
+          updateStepPlants("grow2");
+          break;
+        case "grow2":
+          step = "harvest";
+          break;
+      }
+      break;
+  }
 });
