@@ -169,7 +169,7 @@ body {
   background-color: #d89a2b;
 }
 
-.next-step:disabled {
+.next-step.disabled {
   background-color: #d1ceceff;
   cursor: not-allowed;
 }
