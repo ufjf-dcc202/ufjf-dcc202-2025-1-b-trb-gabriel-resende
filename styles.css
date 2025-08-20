@@ -122,6 +122,10 @@ body {
   background-position: 1px 0, 2px 2px;
 }
 
+.cell.wet {
+  background-color: #382c1dff;
+}
+
 /* Estilos da Caixa de Mensagens */
 
 .message-box {
@@ -149,6 +153,25 @@ body {
 
 .action-button:hover {
   background-color: #5a8c49;
+}
+
+.next-step {
+  background-color: #f6b93b;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.next-step:hover {
+  background-color: #d89a2b;
+}
+
+.next-step:disabled {
+  background-color: #d1ceceff;
+  cursor: not-allowed;
 }
 
 /* Estilos das Ferramentas e da Loja */
