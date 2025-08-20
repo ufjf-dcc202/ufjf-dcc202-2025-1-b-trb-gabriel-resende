@@ -104,6 +104,8 @@ body {
   background-position: 1px 0, 2px 2px;
 }
 
+/* Estilos da Caixa de Mensagens */
+
 .message-box {
   padding: 15px;
   min-height: 120px;
@@ -113,6 +115,8 @@ body {
   margin-bottom: 10px;
   color: #385723;
 }
+
+/* Estilos das Ferramentas e da Loja */
 
 .tools-box,
 .shop-box {
@@ -132,6 +136,13 @@ body {
 .tool.selected,
 .shop.selected {
   background-color: #c5e0b4;
+}
+
+.tool.disabled,
+.shop.disabled {
+  opacity: 0.5;
+  background-color: #d1ceceff;
+  cursor: not-allowed;
 }
 
 .tool-icon,
