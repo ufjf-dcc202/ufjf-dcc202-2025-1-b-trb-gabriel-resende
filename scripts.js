@@ -18,16 +18,18 @@ for (let i = 0; i < 144; i++) {
   farmGrid.appendChild(cell);
 }
 
+const budgetText = document.getElementById("budget");
 const cells = document.querySelectorAll(".cell");
 const messageBox = document.querySelector(".message-box p");
+const actionButton = document.querySelector(".action-button");
+const nextStepButton = document.querySelector(".next-step");
 const tools = document.querySelectorAll(".tool");
+const items = document.querySelectorAll(".shop");
 
 const hoe = document.getElementById("hoe");
 const wateringCan = document.getElementById("watering_can");
 const scythe = document.getElementById("scythe");
 const hands = document.getElementById("hands");
-
-const items = document.querySelectorAll(".shop");
 
 const fertilizer = document.getElementById("fertilizer");
 const fertilizerPrice = 20;
@@ -38,12 +40,19 @@ const eggplantPrice = 90;
 const pineapple = document.getElementById("pineapple");
 const pineapplePrice = 250;
 
+// steps = clear, fertilize, sow, irrigate, grow1, grow2, grow3, harvest
+
+let step = "clear";
+
 let cellsToClear = 0;
 let cellsFertilized = 0;
 let cellsSown = 0;
+let cellsIrrigated = 0;
+let cellsHarvested = 0;
 
 let selectedTool = null;
 let selectedItem = null;
+let seedPlanted = null;
 
 let budget = 100;
 
@@ -59,84 +68,146 @@ const disabledItems = () =>
   items.forEach((item) => item.classList.add("disabled"));
 
 disabledItems();
+nextStepButton.setAttribute("disabled", true);
+
+const clearCell = (cell) => {
+  if (!cell.classList.contains("rock") && !cell.classList.contains("weed"))
+    return;
+
+  cell.classList.remove("rock", "weed");
+  cell.textContent = "";
+};
+
+const onAllCellsIsCleared = () => {
+  if (cellsToClear !== 0) return;
+
+  step = "fertilize";
+  selectedTool = null;
+  hoe.classList.add("disabled");
+  hoe.classList.remove("selected");
+  hands.classList.remove("disabled");
+  messageBox.textContent =
+    "Parabéns! Você limpou todo o terreno, agora voce precisa preparar o solo para o plantio, compre o adubo na loja e clique sobre os terrenos para aplicar.";
+};
+
+const fertilizeCell = (cell) => {
+  if (cell.classList.contains("fertilizer")) return;
+  cell.classList.add("fertilizer");
+};
+
+const onAllCellsIsFertilized = () => {
+  if (cellsFertilized < 144) return;
+
+  messageBox.textContent =
+    "Parabéns! Você fertilizou todo o terreno, agora você pode plantar novas culturas. selecione uma semente na loja e clique sobre os terrenos para plantar.";
+  selectedItem = false;
+  fertilizer.classList.remove("selected");
+  fertilizer.classList.add("disabled");
+  selectedTool = null;
+  step = "sow";
+  hands.classList.remove("selected");
+
+  budget -= 20;
+  budgetText.textContent = `$ ${budget}`;
+};
+
+const sownCell = (cell) => {
+  if (!cell.classList.contains("fertilizer") || cell.classList.contains("sown"))
+    return;
+
+  cell.classList.remove("fertilizer");
+  cell.classList.add("sown");
+};
+
+const onAllCellsIsSown = () => {
+  const selectedSeed = document.getElementById(selectedItem);
+  selectedSeed.classList.remove("selected");
+  selectedSeed.classList.add("disabled");
+  wateringCan.classList.remove("disabled");
+
+  messageBox.textContent =
+    "Parabéns! Você plantou todas as sementes com sucesso. Regue-as para garantir um bom crescimento e ao final pule para a próxima fase.";
+
+  switch (selectedSeed.id) {
+    case "tomato":
+      budget -= 30;
+      break;
+    case "eggplant":
+      budget -= 90;
+      break;
+    case "pineapple":
+      budget -= 250;
+      break;
+  }
+
+  budgetText.textContent = `$ ${budget}`;
+};
 
 cells.forEach((cell) => {
   cell.addEventListener("click", () => {
     if (
-      selectedTool === "hoe" &&
-      (cell.classList.contains("rock") || cell.classList.contains("weed"))
+      ["tomato", "eggplant", "pineapple"].includes(selectedItem) &&
+      step === "sow"
     ) {
-      cell.classList.remove("rock", "weed");
-      cell.textContent = "";
-      cellsToClear--;
-      if (cellsToClear === 0) {
-        messageBox.textContent =
-          "Parabéns! Você limpou todo o terreno, agora voce precisa preparar o solo para o plantio, compre o adubo na loja e clique sobre os terrenos para aplicar.";
-        selectedTool = null;
-        hands.classList.remove("disabled");
-        hoe.classList.remove("selected");
-        hoe.classList.add("disabled");
-      } else {
-        messageBox.textContent = `Bom trabalho! Continue limpando o terreno. ${cellsToClear}/144 limpos.`;
-      }
+      if (
+        !cell.classList.contains("fertilizer") ||
+        cell.classList.contains("sown")
+      )
+        return;
+
+      cellsSown++;
+      messageBox.textContent = `Bom trabalho! Continue plantando novas culturas. ${cellSown}/144 plantadas.`;
     }
 
-    if (selectedItem === "fertilizer" && cellsToClear == 0) {
-      cell.classList.add("fertilizer");
+    if (selectedItem === "fertilizer" && step === "fertilize") {
+      if (cell.classList.contains("fertilizer")) return;
+
+      fertilizeCell(cell);
       cellsFertilized++;
 
-      if (cellsFertilized === 2) {
-        cells.forEach((c) => c.classList.add("fertilizer"));
-        cellsFertilized = 144;
-      }
+      messageBox.textContent = `Bom trabalho! Continue fertilizando o terreno. ${cellsFertilized}/144 fertilizados.`;
 
-      if (cellsFertilized < 144) {
-        messageBox.textContent = `Bom trabalho! Continue fertilizando o terreno. ${cellsFertilized}/144 fertilizados.`;
-      } else {
-        budget -= fertilizerPrice;
-        messageBox.textContent =
-          "Parabéns! Você fertilizou todo o terreno, agora você pode plantar novas culturas. selecione uma semente na loja e clique sobre os terrenos para plantar.";
-        selectedItem = false;
-        fertilizer.classList.remove("selected");
-        items.forEach((item) => {
-          switch (item.id) {
-            case "fertilizer":
-              item.classList.add("disabled");
-              break;
-            case "tomato":
-              if (budget >= tomatoPrice) item.classList.remove("disabled");
-              break;
-            case "eggplant":
-              if (budget >= eggplantPrice) item.classList.remove("disabled");
-              break;
-            case "pineapple":
-              if (budget >= pineapplePrice) item.classList.remove("disabled");
-              break;
-          }
-        });
-        fertilizer.classList.add("disabled");
-      }
-    } else if (cellsFertilized > 0) {
-      if (cellsSown === 2) {
-        cells.forEach((c) => {
-          c.classList.remove("fertilizer");
-          c.classList.add("sown");
-        });
-        cellsFertilized = 0;
-        cellsSown = 144;
-      }
+      onAllCellsIsFertilized();
+    }
 
-      if (
-        cell.classList.contains("fertilizer") &&
-        !cell.classList.contains("sown")
-      ) {
-        cell.classList.remove("fertilizer");
-        cell.classList.add("sown");
-        cellsSown++;
-        messageBox.textContent = `Bom trabalho! Continue plantando novas culturas. ${cellSown}/144 plantadas.`;
-      }
+    if (selectedTool === "hoe" && step === "clear") {
+      if (!cell.classList.contains("rock") && !cell.classList.contains("weed"))
+        return;
+
+      clearCell(cell);
+      cellsToClear--;
+      messageBox.textContent = `Bom trabalho! Continue limpando o terreno. ${cellsToClear}/144 limpos.`;
+
+      onAllCellsIsCleared();
     }
   });
+});
+
+actionButton.addEventListener("click", () => {
+  if (
+    ["tomato", "eggplant", "pineapple"].includes(selectedItem) &&
+    step === "sow"
+  ) {
+    cells.forEach((cell) => sownCell(cell));
+    cellsSown = 144;
+
+    onAllCellsIsSown();
+  }
+
+  if (selectedItem === "fertilizer" && step === "fertilize") {
+    cells.forEach((cell) => fertilizeCell(cell));
+
+    cellsFertilized = 144;
+
+    onAllCellsIsFertilized();
+  }
+
+  if (selectedTool === "hoe" && step === "clear") {
+    cells.forEach((cell) => clearCell(cell));
+    cellsToClear = 0;
+
+    onAllCellsIsCleared();
+  }
 });
 
 tools.forEach((tool) => {
@@ -148,16 +219,25 @@ tools.forEach((tool) => {
     } else tool.classList.add("selected");
 
     if (tool.id === "hands") {
-      if (cellsFertilized === 0)
+      if (step == "fertilize")
         items.forEach(
           (item) =>
             item.id === "fertilizer" && item.classList.remove("disabled")
         );
       else
         items.forEach((item) => {
-          if (item.id !== "fertilizer") {
-            item.classList.remove("disabled");
-          }
+          if (item.id !== "fertilizer")
+            switch (item.id) {
+              case "tomato":
+                if (budget >= tomatoPrice) item.classList.remove("disabled");
+                break;
+              case "eggplant":
+                if (budget >= eggplantPrice) item.classList.remove("disabled");
+                break;
+              case "pineapple":
+                if (budget >= pineapplePrice) item.classList.remove("disabled");
+                break;
+            }
         });
     } else disabledItems();
 
@@ -178,6 +258,16 @@ tools.forEach((tool) => {
   });
 });
 
+const blockSeedsOnSelect = (selected) => {
+  hands.classList.add("disabled");
+
+  items.forEach((i) => {
+    if (i.id !== selected && !i.classList.contains("disabled")) {
+      i.classList.add("disabled");
+    }
+  });
+};
+
 items.forEach((item) => {
   item.addEventListener("click", () => {
     if (selectedTool !== "hands") return;
@@ -194,12 +284,15 @@ items.forEach((item) => {
         break;
       case "tomato":
         selectedItem = "tomato";
+        blockSeedsOnSelect("tomato");
         break;
       case "eggplant":
         selectedItem = "eggplant";
+        blockSeedsOnSelect("eggplant");
         break;
       case "pineapple":
         selectedItem = "pineapple";
+        blockSeedsOnSelect("pineapple");
         break;
     }
 
